@@ -19,13 +19,14 @@ MPFR_VERSION=3.1.6
 GMP_VERSION=6.1.1
 MPC_VERSION=1.0.3
 
+rm -rf /build
 mkdir /build
 cd /build
 mkdir $TOOLCHAIN_PREFIX
 mkdir $MINGW_PREFIX
 ln -s $MINGW_PREFIX $TOOLCHAIN_PREFIX/mingw
-wget -q http://ftp.gnu.org/gnu/binutils/binutils-$BINUTILS_VERSION.tar.bz2
-wget -q ftp://ftp.uvsq.fr/pub/gcc/releases/gcc-$GCC_VERSION/gcc-$GCC_VERSION.tar.xz
+wget -q http://ftp.gnu.org/gnu/binutils/binutils-$BINUTILS_VERSION.tar.bz2 || { echo 'binutils download failed' ; exit 1; }
+wget -q ftp://ftp.uvsq.fr/pub/gcc/releases/gcc-$GCC_VERSION/gcc-$GCC_VERSION.tar.xz || { echo "gcc-$GCC_VERSION download failed" ; exit 1; }
 git config --global user.name "VideoLAN Buildbot"
 git config --global user.email buildbot@videolan.org
 git clone --branch v5.0.3 git://git.code.sf.net/p/mingw-w64/mingw-w64
