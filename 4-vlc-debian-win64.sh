@@ -13,33 +13,40 @@ GMP_VERSION=6.1.1
 MPC_VERSION=1.0.3
 SHORTARCH=x86_64 
 
-rm -rf /build/vlc
+rm -rf /build
 mkdir /build
 cd /build
 git clone --no-checkout https://git.videolan.org/git/vlc.git
 cd vlc
 git checkout e305b509dc6ff26fa7bac0020d700ac0eda725dd
 
-info "Building extra tools"
+ls /build/vlc/contrib/src/protobuf
+sed -i -e "s^protobuf.googlecode.com/svn/rc^github.com/google/protobuf/releases/download/v2.6.0^g" /build/vlc/contrib/src/protobuf/rules.mak
+sed -i -e "s^download.osgeo.org/libtiff^gftp.osuosl.org/pub/blfs/conglomeration/tiff^g" /build/vlc/contrib/src/tiff/rules.mak
+sed -i -e "s^protobuf.googlecode.com/svn/rc^github.com/google/protobuf/releases/download/v2.6.0^g" /build/vlc/extras/tools/packages.mak
+sed -i -e "s^heanet.dl.sourceforge.net/sourceforge^sourceforge.net/projects/libcddb/files^g" /build/vlc/contrib/src/main.mak
+sed -i -e "s^libcddb/libcddb-^libcddb/1.3.2/libcddb-^g" /build/vlc/contrib/src/cddb/rules.mak
+
+echo "Building extra tools"
 cd extras/tools
 ./bootstrap
-make -j`nproc`
+make
 PATH=$PWD/build/bin:$PATH
 cd ../../
 
-info "Building contribs"
+echo "Building contribs"
 export USE_FFMPEG=1
 mkdir -p contrib/contrib-$SHORTARCH && cd contrib/contrib-$SHORTARCH
 if [ ! -z "$BREAKPAD" ]; then
      CONTRIBFLAGS="$CONTRIBFLAGS --enable-breakpad"
 fi
-../bootstrap --host=$TARGET_TUPLE $CONTRIBFLAGS
+../bootstrap --host=$TARGET_TUPLE  --disable-qt --disable-skins2 --disable-lua --disable-protobuf --disable-gettext
 
 # Rebuild the contribs or use the prebuilt ones
 if [ "$PREBUILT" != "yes" ]; then
 make list
-make -j`nproc` fetch
-make -j`nproc`
+make fetch
+make 
 if [ "$PACKAGE" = "yes" ]; then
 make package
 fi
@@ -49,14 +56,14 @@ make .luac
 fi
 cd ../..
 
-info "Bootstrapping"
+echo "Bootstrapping"
 export PKG_CONFIG_LIBDIR=$PWD/contrib/$TRIPLET/lib/pkgconfig
 export PATH=$PWD/contrib/$TRIPLET/bin:$PATH
 echo $PATH
 
 ./bootstrap
 
-info "Configuring VLC"
+echo "Configuring VLC"
 mkdir $SHORTARCH || true
 cd $SHORTARCH
 
@@ -71,10 +78,10 @@ if [ ! -z "$BREAKPAD" ]; then
      CONFIGFLAGS="$CONFIGFLAGS --with-breakpad=$BREAKPAD"
 fi
 
-../extras/package/win32/configure.sh --host=$TRIPLET $CONFIGFLAGS
+../extras/package/win32/configure.sh --host=$TRIPLET --disable-lua --disable-qt --disable-skins2 --disable-nls --disable-d3d11va --prefix=/prefix
 
-info "Compiling"
-make -j`nproc`
+echo "Compiling"
+make
 
 if [ "$INSTALLER" = "n" ]; then
 make package-win32-debug package-win32
