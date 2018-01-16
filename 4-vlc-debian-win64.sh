@@ -11,7 +11,6 @@ BINUTILS_VERSION=2.27
 MPFR_VERSION=3.1.6
 GMP_VERSION=6.1.1
 MPC_VERSION=1.0.3
-PATH="/opt/gcc-x86_64-w64-mingw32/bin:$PATH"
 SHORTARCH=x86_64 
 
 rm -rf /build/vlc
@@ -49,3 +48,39 @@ make prebuilt
 make .luac
 fi
 cd ../..
+
+info "Bootstrapping"
+export PKG_CONFIG_LIBDIR=$PWD/contrib/$TRIPLET/lib/pkgconfig
+export PATH=$PWD/contrib/$TRIPLET/bin:$PATH
+echo $PATH
+
+./bootstrap
+
+info "Configuring VLC"
+mkdir $SHORTARCH || true
+cd $SHORTARCH
+
+CONFIGFLAGS=""
+if [ "$RELEASE" != "yes" ]; then
+     CONFIGFLAGS="$CONFIGFLAGS --enable-debug"
+fi
+if [ "$I18N" != "yes" ]; then
+     CONFIGFLAGS="$CONFIGFLAGS --disable-nls"
+fi
+if [ ! -z "$BREAKPAD" ]; then
+     CONFIGFLAGS="$CONFIGFLAGS --with-breakpad=$BREAKPAD"
+fi
+
+../extras/package/win32/configure.sh --host=$TRIPLET $CONFIGFLAGS
+
+info "Compiling"
+make -j`nproc`
+
+if [ "$INSTALLER" = "n" ]; then
+make package-win32-debug package-win32
+elif [ "$INSTALLER" = "r" ]; then
+make package-win32
+elif [ "$INSTALLER" = "u" ]; then
+make package-win32-release
+sha512sum vlc-*-release.7z
+fi
