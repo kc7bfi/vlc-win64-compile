@@ -20,12 +20,23 @@ git clone --no-checkout https://git.videolan.org/git/vlc.git
 cd vlc
 git checkout e305b509dc6ff26fa7bac0020d700ac0eda725dd
 
-ls /build/vlc/contrib/src/protobuf
 sed -i -e "s^protobuf.googlecode.com/svn/rc^github.com/google/protobuf/releases/download/v2.6.0^g" /build/vlc/contrib/src/protobuf/rules.mak
-sed -i -e "s^download.osgeo.org/libtiff^gftp.osuosl.org/pub/blfs/conglomeration/tiff^g" /build/vlc/contrib/src/tiff/rules.mak
+sed -i -e "s^download.osgeo.org/libtiff^ftp.osuosl.org/pub/blfs/conglomeration/tiff^g" /build/vlc/contrib/src/tiff/rules.mak
 sed -i -e "s^protobuf.googlecode.com/svn/rc^github.com/google/protobuf/releases/download/v2.6.0^g" /build/vlc/extras/tools/packages.mak
 sed -i -e "s^heanet.dl.sourceforge.net/sourceforge^sourceforge.net/projects/libcddb/files^g" /build/vlc/contrib/src/main.mak
 sed -i -e "s^libcddb/libcddb-^libcddb/1.3.2/libcddb-^g" /build/vlc/contrib/src/cddb/rules.mak
+sed -i -e "s^ .sum-crystalhd^^g" /build/vlc/contrib/src/crystalhd/rules.mak
+sed -i -e "/sum-crystalhd/d" /build/vlc/contrib/src/crystalhd/rules.mak
+sed -i -e "s^ .sum-tiff^^g" /build/vlc/contrib/src/tiff/rules.mak
+sed -i -e "s^PNG_URL :=.*$^PNG_URL := https://sourceforge.net/projects/libpng/files/libpng16/older-releases/1.6.16/libpng-1.6.16.tar.xz^g" /build/vlc/contrib/src/png/rules.mak
+sed -i -e "s^ZLIB_URL :=.*$^ZLIB_URL := https://www.zlib.net/fossils/zlib-1.2.8.tar.gz^g" /build/vlc/contrib/src/zlib/rules.mak
+sed -i -e "s^FREETYPE2_URL :=.*$^FREETYPE2_URL := https://sourceforge.net/projects/freetype/files/freetype2/2.5.5/freetype-2.5.5.tar.gz^g" /build/vlc/contrib/src/freetype2/rules.mak
+sed -i -e "s^FRIBIDI_URL :=.*$^FRIBIDI_URL := https://ftp.osuosl.org/pub/blfs/conglomeration/fribidi/fribidi-0.19.6.tar.bz2^g" /build/vlc/contrib/src/fribidi/rules.mak
+sed -i -e "s^OPENJPEG_URL :=.*$^OPENJPEG_URL := https://download.videolan.org/contrib/openjpeg/openjpeg-1.5.0.tar.gz^g" /build/vlc/contrib/src/openjpeg/rules.mak
+sed -i -e "s^LAME_URL :=.*$^LAME_URL := https://sourceforge.net/projects/lame/files/lame/3.99/lame-3.99.5.tar.gz^g" /build/vlc/contrib/src/lame/rules.mak
+sed -i -e "s^--enable-memalign-hack^^g" /build/vlc/contrib/src/ffmpeg/rules.mak
+sed -i -e "/enable-libopenjpeg/d" /build/vlc/contrib/src/ffmpeg/rules.mak
+sed -i -e "8,12d" /build/vlc/contrib/src/d3d11/id3d11videodecoder.patch
 
 echo "Building extra tools"
 cd extras/tools
@@ -40,7 +51,8 @@ mkdir -p contrib/contrib-$SHORTARCH && cd contrib/contrib-$SHORTARCH
 if [ ! -z "$BREAKPAD" ]; then
      CONTRIBFLAGS="$CONTRIBFLAGS --enable-breakpad"
 fi
-../bootstrap --host=$TARGET_TUPLE  --disable-qt --disable-skins2 --disable-lua --disable-protobuf --disable-gettext
+#../bootstrap --host=$TARGET_TUPLE  --disable-qt --disable-skins2 --disable-lua --disable-protobuf --disable-gettext
+../bootstrap --host=$TARGET_TUPLE --disable-cddb --disable-crystalhd
 
 # Rebuild the contribs or use the prebuilt ones
 if [ "$PREBUILT" != "yes" ]; then
